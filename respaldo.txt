@@ -1,0 +1,233 @@
+import tkinter as tk
+from tkinter import ttk
+from tkinter import messagebox
+from fpdf import FPDF
+import os
+
+# Crear la ventana principal
+root = tk.Tk()
+root.title("Checklist de Validación")
+
+# Crear el frame principal
+frame = ttk.Frame(root, padding="10")
+frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+
+# JOB
+job_label = ttk.Label(frame, text="JOB:")
+job_label.grid(row=0, column=0, sticky=tk.W, pady=5)
+
+job_var = tk.StringVar()
+job_entry = ttk.Entry(frame, textvariable=job_var, width=40)
+job_entry.grid(row=0, column=1, columnspan=3, pady=5)
+
+# Celda vacía en la columna 4 para separar
+vacio_col4 = ttk.Label(frame, text="                 ")
+vacio_col4.grid(row=0, column=4, sticky=tk.W, pady=10)
+
+# FECHA
+fecha_label = ttk.Label(frame, text="Fecha:")
+fecha_label.grid(row=0, column=5, sticky=tk.W, pady=5)
+
+fecha_var = tk.StringVar()
+fecha_entry = ttk.Entry(frame, textvariable=fecha_var, width=40)
+fecha_entry.grid(row=0, column=6, columnspan=3, pady=5)
+
+# CLIENTE
+cliente_label = ttk.Label(frame, text="Cliente:")
+cliente_label.grid(row=1, column=0, sticky=tk.W, pady=5)
+
+cliente_var = tk.StringVar()
+cliente_entry = ttk.Entry(frame, textvariable=cliente_var, width=40)
+cliente_entry.grid(row=1, column=1, columnspan=3, pady=5)
+
+# PRODUCTO
+producto_label = ttk.Label(frame, text="Producto:")
+producto_label.grid(row=1, column=5, sticky=tk.W, pady=5)
+
+producto_var = tk.StringVar()
+producto_entry = ttk.Entry(frame, textvariable=producto_var, width=40)
+producto_entry.grid(row=1, column=6, columnspan=3, pady=5)
+
+# Crear las etiquetas y opciones de selección
+fields = [
+    "¿Se recibe Arte?", "¿Se recibe Base de Datos?", "¿Se recibe Layout?", 
+    "¿Se recibe Vo.Bo.?", "Ordenamiento:", "Muestra Física:", 
+    "Código de Barras:", "Foliatura:"
+]
+variables = {}
+
+x = 3
+y = 0
+
+for idx, field in enumerate(fields):
+    if idx % 2 != 0:
+        idx -= 1
+        y = 5
+    else:
+        y = 0
+
+    label = ttk.Label(frame, text=field)
+    label.grid(row=idx + x, column=y, sticky=tk.W, pady=10)
+
+    var = tk.StringVar(value="N/A")
+    variables[field] = var
+
+    ttk.Radiobutton(frame, text="Sí", variable=var, value="Sí").grid(row=idx + x, column=y + 1, padx=5)
+    ttk.Radiobutton(frame, text="No", variable=var, value="No").grid(row=idx + x, column=y + 2, padx=5)
+    ttk.Radiobutton(frame, text="N/A", variable=var, value="N/A").grid(row=idx + x, column=y + 3, padx=5)
+
+# RANGO FOLIATURA
+rango_label = ttk.Label(frame, text="Rango:")
+rango_label.grid(row=len(fields) + 2, column=5, sticky=tk.W, pady=5)
+
+rango_var = tk.StringVar()
+rango_entry = ttk.Entry(frame, textvariable=rango_var, width=40)
+rango_entry.grid(row=len(fields) + 2, column=6, columnspan=3, pady=5)
+
+# Prueba Código de Barras
+barcode_label = ttk.Label(frame, text="Prueba Código de Barras:")
+barcode_label.grid(row=len(fields) + 2, column=0, sticky=tk.W, pady=5)
+
+barcode_var = tk.StringVar()
+barcode_entry = ttk.Entry(frame, textvariable=barcode_var, width=40)
+barcode_entry.grid(row=len(fields) + 2, column=1, columnspan=3, pady=5)
+
+# Tipo Código de Barras
+typebar_label = ttk.Label(frame, text="Tipo Código de Barras:")
+typebar_label.grid(row=len(fields) + 3, column=0, sticky=tk.W, pady=5)
+
+typebar_var = tk.StringVar()
+typebar_entry = ttk.Entry(frame, textvariable=typebar_var, width=40)
+typebar_entry.grid(row=len(fields) + 3, column=1, columnspan=3, pady=5)
+
+# Impresión
+impresion_label = ttk.Label(frame, text="Tipo Impresión:")
+impresion_label.grid(row=len(fields) + 5, column=5, sticky=tk.W, pady=5)
+
+varimp = tk.StringVar(value="N/A")
+
+ttk.Radiobutton(frame, text="Simplex", variable=varimp, value="Simplex").grid(row=len(fields) + 5, column=6, padx=5)
+ttk.Radiobutton(frame, text="Duplex", variable=varimp, value="Duplex").grid(row=len(fields) + 5, column=7, padx=5)
+
+# Tipo de Documento
+documento_label = ttk.Label(frame, text="Tipo Documento:")
+documento_label.grid(row=len(fields) + 5, column=0, sticky=tk.W, pady=5)
+
+vardoc = tk.StringVar(value="N/A")
+
+ttk.Radiobutton(frame, text="PDF", variable=vardoc, value="PDF").grid(row=len(fields) + 5, column=1, padx=5)
+ttk.Radiobutton(frame, text="AFP", variable=vardoc, value="AFP").grid(row=len(fields) + 5, column=2, padx=5)
+ttk.Radiobutton(frame, text="PS", variable=vardoc, value="PS").grid(row=len(fields) + 5, column=3, padx=5)
+
+# Tamaño Documento
+tamaño_label = ttk.Label(frame, text="Tamaño Documento:")
+tamaño_label.grid(row=len(fields) + 6, column=0, sticky=tk.W, pady=5)
+
+tamaño_var = tk.StringVar()
+tamaño_entry = ttk.Entry(frame, textvariable=tamaño_var, width=40)
+tamaño_entry.grid(row=len(fields) + 6, column=1, columnspan=3, pady=5)
+
+# Máquina
+maquina_label = ttk.Label(frame, text="Máquina:")
+maquina_label.grid(row=len(fields) + 6, column=5, sticky=tk.W, pady=5)
+
+maquina_var = tk.StringVar()
+maquina_entry = ttk.Entry(frame, textvariable=maquina_var, width=40)
+maquina_entry.grid(row=len(fields) + 6, column=6, columnspan=3, pady=5)
+
+# Desarrolladores
+dev_label = ttk.Label(frame, text="Desarrolladores")
+dev_label.grid(row=len(fields) + 8, column=0, sticky=tk.W, pady=5)
+
+dev_var = tk.StringVar()
+dev_menu = ttk.OptionMenu(frame, dev_var, "Seleccionar", "Rocío Martínez", "Allan Martell")
+dev_menu.grid(row=len(fields) + 8, column=1, columnspan=3, pady=5)
+
+# Función para guardar el PDF
+def save_pdf():
+    job_name = job_var.get()
+    if not job_name:
+        messagebox.showerror("Error", "El campo JOB no puede estar vacío.")
+        return
+
+    # Crear la carpeta JOBS si no existe
+    if not os.path.exists("JOBS"):
+        os.makedirs("JOBS")
+
+    # Crear el PDF
+    pdf = FPDF()
+    pdf.add_page()
+
+    # Insertar la imagen
+    pdf.image("Formex_logo.jpeg", x=10, y=8, w=60)
+
+    # Título
+    pdf.set_font("Arial", "B", 16)
+    pdf.cell(250, 10, txt="Checklist Desarrollo Dato Variable", ln=True, align="C")
+    pdf.ln(20)  # Espacio después del título
+
+    # Configurar 2 columnas
+    pdf.set_font("Arial", size=12)
+    col_width = 90  # Ancho de la columna
+    start_y = pdf.get_y()
+    
+    # Primera columna
+    pdf.set_x(10)
+    pdf.cell(col_width, 10, txt=f"JOB: {job_var.get()}", ln=False, align="L")
+    pdf.cell(col_width, 10, txt=f"Fecha: {fecha_var.get()}", ln=False, align="R")
+    pdf.ln(10)
+    
+    pdf.cell(col_width, 10, txt=f"Cliente: {cliente_var.get()}", ln=False, align="L")
+    pdf.ln(10)
+    pdf.cell(col_width, 10, txt=f"Producto: {producto_var.get()}", ln=False, align="L")
+    pdf.ln(10)
+
+    for idx, (field, var) in enumerate(variables.items()):
+        if(idx%2 != 0):
+            alinea = "R"     
+        else:
+            alinea = "L"
+            pdf.ln(10)
+        pdf.cell(col_width, 10, txt=f"{field}: {var.get()}", ln=False, align=alinea)
+
+    # Agregar rango, prueba de código de barras, y demás campos adicionales en la segunda columna
+    ##pdf.set_y(2)
+    #pdf.set_x(10)
+    pdf.ln(10)
+    pdf.cell(col_width, 10, txt=f"Tipo Código de Barras: {typebar_var.get()}", ln=False, align="L")
+    pdf.cell(col_width, 10, txt=f"Rango: {rango_var.get()}", ln=True, align="R")
+    pdf.cell(col_width, 10, txt=f"Prueba Código de Barras: {barcode_var.get()}", ln=False, align="L")
+    pdf.ln(30)
+    pdf.cell(col_width, 10, txt=f"Tipo Impresión: {varimp.get()}", ln=False, align="L")
+    pdf.cell(col_width, 10, txt=f"Tipo Documento: {vardoc.get()}", ln=False, align="R")
+    pdf.ln(10)
+    pdf.cell(col_width, 10, txt=f"Tamaño Documento: {tamaño_var.get()}", ln=False, align="L")
+    pdf.cell(col_width, 10, txt=f"Máquina: {maquina_var.get()}", ln=False, align="R")
+    pdf.ln(30)
+    # Espacio para firmas
+    pdf.cell(200, 10, txt=f"Desarrollador: {dev_var.get()}", ln=True, align="L")
+
+    # Espacio para las firmas
+    pdf.ln(20)
+    pdf.cell(90, 10, txt="Desarrollador:", ln=False, align="L")
+    pdf.cell(90, 10, txt="Jefe Digital:", ln=False, align="L")
+    pdf.ln(20)
+
+    pdf.cell(90, 10, txt="________________________", ln=False, align="L")
+    pdf.cell(90, 10, txt="________________________", ln=False, align="L")
+
+
+    # Guardar el PDF
+    pdf.output(f"JOBS/{job_name}.pdf")
+    messagebox.showinfo("Éxito", f"PDF guardado como JOBS/{job_name}.pdf")
+
+# Botón para aceptar y guardar el PDF
+save_button = ttk.Button(frame, text="Aceptar", command=save_pdf)
+save_button.grid(row=len(fields) + 9, column=2, pady=10)
+
+# Botón para cancelar
+cancel_button = ttk.Button(frame, text="Cancelar", command=root.quit)
+cancel_button.grid(row=len(fields) + 9, column=3, pady=10)
+
+# Iniciar la aplicación
+root.mainloop()
